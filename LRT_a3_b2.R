@@ -1,0 +1,223 @@
+rm(list=ls())
+library(Iso)
+
+fun1<-function(n11,n12,n21,n22,n31,n32,v11,v12,v21,v22,v31,v32)
+{
+  g11<-rnorm(n11,0,sqrt(v11));g12<-rnorm(n12,0,sqrt(v12))
+  g21<-rnorm(n21,0,sqrt(v21));g22<-rnorm(n22,0,sqrt(v22))
+  g31<-rnorm(n31,0,sqrt(v31));g32<-rnorm(n32,0,sqrt(v32))
+  s11=var(g11);s12=var(g12);s21=var(g21);s22=var(g22);s31=var(g31);s32=var(g32)
+  m11=mean(g11);m12=mean(g12);m21=mean(g21);m22=mean(g22);m31=mean(g31);m32=mean(g32)
+  x1=(m11+m12)/2;x2=(m21+m22)/2;x3=(m31+m32)/2
+  y1=(m11+m21+m31)/3;y2=(m12+m22+m32)/3
+  m=(m11+m12+m21+m22+m31+m32)/6
+  a=c(x1,x2,x3);b=c(y1-m,y2-m)
+  x14=a;x15=b
+  S11=s11;S12=s12;S21=s21;S22=s22;S31=s31;S32=s32
+  c(S11,S12,S21,S22,S31,S32)
+  repeat
+  {
+    u11=n11/S11;u12=n12/S12;u21=n21/S21;u22=n22/S22;u31=n31/S31;u32=n32/S32
+    u.1=(u11+u21+u31);u.2=(u12+u22+u32)
+    a10=((u11*m11+u12*m12)+(u12-u11)*x15[1])/(u11+u12)
+    a11=((u21*m21+u22*m22)+(u22-u21)*x15[1])/(u21+u22)
+    a13=((u31*m31+u32*m32)+(u32-u31)*x15[1])/(u31+u32)
+    w1=u11+u12;w2=u21+u22;w3=u31+u32
+    alpha0<-c(a10,a11,a13)
+    w=c(w1,w2,w3)
+    alpha1=pava(alpha0,w)
+    v1=(u11*(m11-alpha1[1])+u21*(m21-alpha1[2])+u31*(m31-alpha1[3]))-
+      (u12*(m12-alpha1[1])+u22*(m22-alpha1[2])+u32*(m32-alpha1[3]))
+    b1=v1/(u.1+u.2)
+    b2=-b1
+    beta=c(b1,b2)
+    S111=sum((g11-alpha1[1]-b1)^2)/n11;S112=sum((g12-alpha1[1]-b2)^2)/n12
+    S121=sum((g21-alpha1[2]-b1)^2)/n21;S122=sum((g22-alpha1[2]-b2)^2)/n22
+    S131=sum((g31-alpha1[3]-b1)^2)/n31;S132=sum((g32-alpha1[3]-b2)^2)/n32
+    M=max(abs(x14-alpha1));N=max(abs(x15-beta))
+    if(M<=0.0000001 & N<=0.0000001)
+    {
+      break
+    }
+    S11=S111;S12=S112;S21=S121;S22=S122;S31=S131;S32=S132
+    x14=alpha1;x15=beta
+  }
+  u11=n11/s11;u12=n12/s12;u21=n21/s21;u22=n22/s22;u31=n31/s31;u32=n32/s32
+  U.1=u11+u21+u31;U.2=u12+u22+u32
+  beta01=c((u11*m11+u21*m21+u31*m31)/U.1,(u12*m12+u22*m22+u32*m32)/U.2)
+  x16=beta01
+  V11=sum((g11-x16[1])^2)/n11;V12=sum((g12-x16[2])^2)/n12
+  V21=sum((g21-x16[1])^2)/n21;V22=sum((g22-x16[2])^2)/n22
+  V31=sum((g31-x16[1])^2)/n31;V32=sum((g32-x16[2])^2)/n32
+  repeat
+  {
+    u11=n11/V11;u12=n12/V12;u21=n21/V21;u22=n22/V22;u31=n31/V31;u32=n32/V32
+    U.1=u11+u21+u31;U.2=u12+u22+u32
+    beta11=c((u11*m11+u21*m21+u31*m31)/U.1,(u12*m12+u22*m22+u32*m32)/U.2)
+    dif=max(abs(x16-beta11))
+    if(dif<=0.00001)
+    {
+      break
+    }
+    S011=sum((g11-beta11[1])^2)/n11;S012=sum((g12-beta11[2])^2)/n12
+    S021=sum((g21-beta11[1])^2)/n21;S022=sum((g22-beta11[2])^2)/n22
+    S031=sum((g31-beta11[1])^2)/n31;S032=sum((g32-beta11[2])^2)/n32
+    V11=S011;V12=S012;V21=S021;V22=S022;V31=S031;V32=S032
+    x16=beta11
+  }
+  neu=(S111^(n11/2))*(S112^(n12/2))*(S121^(n21/2))*(S122^(n22/2))*(S131^(n31/2))*(S132^(n32/2))
+  dno=(V11^(n11/2))*(V12^(n12/2))*(V21^(n21/2))*(V22^(n22/2))*(V31^(n31/2))*(V32^(n32/2))
+  value=neu/dno
+  return(value)
+}
+#X=replicate(1000,fun1(10,10,10,15,15,10,1,1,1.5,1,1.5,2))
+#plot(X)
+
+fun2<-function(n11,n12,n21,n22,n31,n32,v11,v12,v21,v22,v31,v32)
+{
+  x=replicate(1000,fun1(n11,n12,n21,n22,n31,n32,v11,v12,v21,v22,v31,v32))
+  y<-sort(x,decreasing=FALSE)
+  c<-y[50]
+  return(c)
+}
+fun3<-function(n11,n12,n21,n22,n31,n32,mu11,mu12,mu21,mu22,mu31,mu32,v11,v12,v21,v22,v31,v32)
+{
+  g11<-rnorm(n11,mu11,sqrt(v11));g12<-rnorm(n12,mu12,sqrt(v12))
+  g21<-rnorm(n21,mu21,sqrt(v21));g22<-rnorm(n22,mu22,sqrt(v22))
+  g31<-rnorm(n31,mu31,sqrt(v31));g32<-rnorm(n32,mu32,sqrt(v32))
+  s11=var(g11);s12=var(g12);s21=var(g21);s22=var(g22);s31=var(g31);s32=var(g32)
+  m11=mean(g11);m12=mean(g12);m21=mean(g21);m22=mean(g22);m31=mean(g31);m32=mean(g32)
+  x1=(m11+m12)/2;x2=(m21+m22)/2;x3=(m31+m32)/2
+  y1=(m11+m21+m31)/3;y2=(m12+m22+m32)/3
+  m=(m11+m12+m21+m22+m31+m32)/6
+  a1=c(x1,x2,x3);b1=c(y1-m,y2-m)
+  x14=a1;x15=b1
+  S11=s11;S12=s12;S21=s21;S22=s22;S31=s31;S32=s32
+  #sum((g11-x14[1]-x15[1])^2)/n11;S12=sum((g12-x14[1]-x15[2])^2)/n12
+  #S21=sum((g21-x14[2]-x15[1])^2)/n21;S22=sum((g22-x14[2]-x15[2])^2)/n22
+  repeat
+  {
+    u11=n11/S11;u12=n12/S12;u21=n21/S21;u22=n22/S22;u31=n31/S31;u32=n32/S32
+    u.1=(u11+u21+u31);u.2=(u12+u22+u32)
+    a10=((u11*m11+u12*m12)+(u12-u11)*x15[1])/(u11+u12)
+    a11=((u21*m21+u22*m22)+(u22-u21)*x15[1])/(u21+u22)
+    a13=((u31*m31+u32*m32)+(u32-u31)*x15[1])/(u31+u32)
+    w1=u11+u12;w2=u21+u22;w3=u31+u32
+    alpha0<-c(a10,a11,a13)
+    w=c(w1,w2,w3)
+    alpha1=pava(alpha0,w)
+    v1=(u11*(m11-alpha1[1])+u21*(m21-alpha1[2])+u31*(m31-alpha1[3]))-
+      (u12*(m12-alpha1[1])+u22*(m22-alpha1[2])+u32*(m32-alpha1[3]))
+    beta1=v1/(u.1+u.2)
+    beta2=-beta1
+    beta=c(beta1,beta2)
+    b1=beta
+    S111=sum((g11-alpha1[1]-beta1)^2)/n11;S112=sum((g12-alpha1[1]-beta2)^2)/n12
+    S121=sum((g21-alpha1[2]-beta1)^2)/n21;S122=sum((g22-alpha1[2]-beta2)^2)/n22
+    S131=sum((g31-alpha1[3]-beta1)^2)/n31;S132=sum((g32-alpha1[3]-beta2)^2)/n32
+    M=max(abs(x14-alpha1));N=max(abs(x15-beta))
+    if(M<=0.0000001 & N<=0.0000001)
+    {
+      break
+    }
+    S11=S111;S12=S112;S21=S121;S22=S122;S31=S131;S32=S132
+    x14=alpha1;x15=beta
+  }
+  u11=n11/s11;u12=n12/s12;u21=n21/s21;u22=n22/s22;u31=n31/s31;u32=n32/s32
+  U.1=u11+u21+u31;U.2=u12+u22+u32
+  beta01=c((u11*m11+u21*m21+u31*m31)/U.1,(u12*m12+u22*m22+u32*m32)/U.2)
+  x16=beta01
+  s011=sum((g11-x16[1])^2)/n11;s012=sum((g12-x16[2])^2)/n12
+  s021=sum((g21-x16[1])^2)/n21;s022=sum((g22-x16[2])^2)/n22
+  s031=sum((g31-x16[1])^2)/n31;s032=sum((g32-x16[2])^2)/n32
+  repeat
+  {
+    u11=n11/s011;u12=n12/s012;u21=n21/s021;u22=n22/s022;u31=n31/s031;u32=n32/s032
+    U.1=u11+u21+u31;U.2=u12+u22+u32
+    beta11=c((u11*m11+u21*m21+u31*m31)/U.1,(u12*m12+u22*m22+u32*m32)/U.2)
+    dif=max(abs(x16-beta11))
+    if(dif<=0.00001)
+    {
+      break
+    }
+    S011=sum((g11-beta11[1])^2)/n11;S012=sum((g12-beta11[2])^2)/n12
+    S021=sum((g21-beta11[1])^2)/n21;S022=sum((g22-beta11[2])^2)/n22
+    S031=sum((g31-beta11[1])^2)/n31;S032=sum((g32-beta11[2])^2)/n32
+    s011=S011;s012=S012;s021=S021;s022=S022;s031=S031;s032=S032
+    x16=beta11
+  }
+  neu=(S111^(n11/2))*(S112^(n12/2))*(S121^(n21/2))*(S122^(n22/2))*(S131^(n31/2))*(S132^(n32/2))
+  dno=(S011^(n11/2))*(S012^(n12/2))*(S021^(n21/2))*(S022^(n22/2))*(S031^(n31/2))*(S032^(n32/2))
+  value=neu/dno
+  #return(value)
+  out<-fun2(n11,n12,n21,n22,n31,n32,s11,s12,s21,s22,s31,s32)
+  a=0
+  if(value<out)
+    a=a+1
+  return(a)
+}
+
+
+fun4<-function(n11,n12,n21,n22,n31,n32,mu11,mu12,mu21,mu22,mu31,mu32,v11,v12,v21,v22,v31,v32)
+{
+  # find number of times maxt-T value > critical value among 1000 values
+  out<-replicate(1000,fun3(n11,n12,n21,n22,n31,n32,mu11,mu12,mu21,mu22,mu31,mu32,v11,v12,v21,v22,v31,v32))
+  value<-mean(out)
+  return(value)
+}
+
+##Size values of Table 3.3
+
+X=replicate(5,fun4(5,6,5,6,5,6,0,0,0,0,0,0,4,75,67,53,96,52))
+X;mean(X)
+X=replicate(5,fun4(8,8,8,8,8,8,0,0,0,0,0,0,4,75,67,53,96,52))
+X;mean(X)
+X=replicate(5,fun4(15,5,6,10,18,20,0,0,0,0,0,0,4,75,67,53,96,52))
+X;mean(X)
+X=replicate(5,fun4(10,5,6,60,50,100,0,0,0,0,0,0,4,75,67,53,96,52))
+X;mean(X)
+X=replicate(5,fun4(5,10,15,20,25,30,0,0,0,0,0,0,4,75,67,53,96,52))
+X;mean(X)
+X=replicate(5,fun4(30,25,20,15,10,5,0,0,0,0,0,0,4,75,67,53,96,52))
+X;mean(X)
+
+
+X=replicate(5,fun4(5,6,5,6,5,6,0,0,0,0,0,0,52,96,53,67,75,4))
+X;mean(X)
+X=replicate(5,fun4(8,8,8,8,8,8,0,0,0,0,0,0,52,96,53,67,75,4))
+X;mean(X)
+X=replicate(5,fun4(15,5,6,10,18,20,0,0,0,0,0,0,52,96,53,67,75,4))
+X;mean(X)
+X=replicate(5,fun4(10,5,6,60,50,100,0,0,0,0,0,0,52,96,53,67,75,4))
+X;mean(X)
+X=replicate(5,fun4(5,10,15,20,25,30,0,0,0,0,0,0,52,96,53,67,75,4))
+X;mean(X)
+X=replicate(5,fun4(30,25,20,15,10,5,0,0,0,0,0,0,52,96,53,67,75,4))
+X;mean(X)
+
+X=replicate(5,fun4(5,6,5,6,5,6,0,0,0,0,0,0,10^2,7^2,3^2,2^2,2^2,1))
+X;mean(X)
+X=replicate(5,fun4(8,8,8,8,8,8,0,0,0,0,0,0,10^2,7^2,3^2,2^2,2^2,1))
+X;mean(X)
+X=replicate(5,fun4(15,5,6,10,18,20,0,0,0,0,0,0,10^2,7^2,3^2,2^2,2^2,1))
+X;mean(X)
+X=replicate(5,fun4(10,5,6,60,50,100,0,0,0,0,0,0,10^2,7^2,3^2,2^2,2^2,1))
+X;mean(X)
+X=replicate(5,fun4(5,10,15,20,25,30,0,0,0,0,0,0,10^2,7^2,3^2,2^2,2^2,1))
+X;mean(X)
+X=replicate(5,fun4(30,25,20,15,10,5,0,0,0,0,0,0,10^2,7^2,3^2,2^2,2^2,1))
+X;mean(X)
+
+X=replicate(5,fun4(5,6,5,6,5,6,0,0,0,0,0,0,1,2^2,2^2,3^2,7^2,10^2))
+X;mean(X)
+X=replicate(5,fun4(8,8,8,8,8,8,0,0,0,0,0,0,1,2^2,2^2,3^2,7^2,10^2))
+X;mean(X)
+X=replicate(5,fun4(15,5,6,10,18,20,0,0,0,0,0,0,1,2^2,2^2,3^2,7^2,10^2))
+X;mean(X)
+X=replicate(5,fun4(10,5,6,60,50,100,0,0,0,0,0,0,1,2^2,2^2,3^2,7^2,10^2))
+X;mean(X)
+X=replicate(5,fun4(5,10,15,20,25,30,0,0,0,0,0,0,1,2^2,2^2,3^2,7^2,10^2))
+X;mean(X)
+X=replicate(5,fun4(30,25,20,15,10,5,0,0,0,0,0,0,1,2^2,2^2,3^2,7^2,10^2))
+X;mean(X)
+
